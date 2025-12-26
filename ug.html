@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HiFami Elite Edition</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        :root {
+            --p-grad: linear-gradient(135deg, #a29bfe, #6c5ce7);
+            --s-grad: linear-gradient(135deg, #fab1a0, #ff7675);
+            --bg: #f0f3f7; --card: #ffffff; --text: #2d3436;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; overflow: hidden; height: 100vh; }
+
+        /* نظام الصفحات */
+        .page { display: none; height: 100vh; overflow-y: auto; padding: 15px 15px 100px; animation: slideInUp 0.4s; }
+        .page.active { display: block; }
+
+        /* الملف الشخصي الفخم */
+        .profile-card {
+            background: var(--p-grad); padding: 40px 20px; border-radius: 0 0 50px 50px;
+            text-align: center; color: white; box-shadow: 0 15px 30px rgba(108, 92, 231, 0.2); position: relative;
+        }
+        .u-avatar-lg {
+            width: 110px; height: 110px; border-radius: 50%; border: 5px solid rgba(255,255,255,0.3);
+            margin: 0 auto 15px; background: white; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .u-avatar-lg img { width: 100%; height: 100%; }
+        
+        /* الأزرار العصرية */
+        .btn-glass { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 8px 15px; border-radius: 12px; cursor: pointer; backdrop-filter: blur(5px); }
+        .btn-main { background: var(--p-grad); color: white; border: none; padding: 15px; border-radius: 20px; width: 100%; font-weight: bold; cursor: pointer; box-shadow: 0 10px 20px rgba(108, 92, 231, 0.2); margin: 10px 0; }
+
+        /* الإحصائيات */
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: -30px 15px 20px; }
+        .stat-item { background: white; padding: 20px 10px; border-radius: 25px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.03); }
+        .stat-item b { color: #6c5ce7; font-size: 18px; display: block; }
+
+        /* المحادثة الخاصة */
+        .chat-selector { background: white; padding: 15px; border-radius: 20px; margin-bottom: 15px; display: flex; gap: 10px; }
+        .chat-box { background: white; border-radius: 25px; height: 400px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        #private-msgs { flex: 1; overflow-y: auto; padding: 15px; background: #f9f9ff; }
+        .msg { margin-bottom: 10px; padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size: 14px; }
+        .msg.me { background: #6c5ce7; color: white; align-self: flex-start; }
+        .msg.you { background: #e1e1e1; color: #333; align-self: flex-end; }
+
+        /* المتجر الملون */
+        .gift-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .gift-item { background: white; border-radius: 25px; padding: 20px; text-align: center; transition: 0.3s; border: 1px solid #f0f0f0; }
+        .gift-item:active { transform: scale(0.95); }
+        .gift-item i { font-size: 45px; margin-bottom: 10px; display: block; }
+
+        /* القائمة السفلية */
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: white; display: flex; padding: 10px 0; border-radius: 30px 30px 0 0; box-shadow: 0 -10px 30px rgba(0,0,0,0.05); z-index: 1000; }
+        .nav-item { flex: 1; text-align: center; color: #b2bec3; font-size: 11px; }
+        .nav-item.active { color: #6c5ce7; font-weight: bold; }
+        .nav-item i { font-size: 24px; margin-bottom: 4px; display: block; }
+
+        /* Modal */
+        #modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); }
+        .modal-body { background: white; padding: 30px; border-radius: 30px; width: 100%; max-width: 400px; text-align: center; animation: zoomIn 0.3s; }
+        input { width: 100%; padding: 12px; border-radius: 15px; border: 1px solid #eee; margin: 10px 0; outline: none; text-align: center; background: #f9f9f9; }
+
+        @keyframes slideInUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div id="modal"><div class="modal-body" id="m-content"></div></div>
+
+    <div id="p-home" class="page active">
+        <div class="profile-card">
+            <button class="btn-glass" onclick="openEditName()" style="position: absolute; right: 20px; top: 20px;"><i class="fas fa-pen"></i></button>
+            <div class="u-avatar-lg">
+                <img src="https://api.dicebear.com/7.x/big-smile/svg?seed=Lucky" id="my-img">
+            </div>
+            <h2 id="my-name" style="margin: 0;">جارِ التحميل...</h2>
+            <p id="my-id" style="opacity: 0.8; font-size: 14px; margin: 5px 0;">ID: HF000000</p>
+            <div id="v-badge" style="display:none; color: #00d2d3; font-size: 12px; margin-top: 5px;"><i class="fas fa-check-circle"></i> حساب موثق</div>
+        </div>
+
+        <div class="grid-3">
+            <div class="stat-item"><b>💰</b> <span id="u-coins">0</span><br><small>ذهب</small></div>
+            <div class="stat-item"><b>🌟</b> <span id="u-lvl">1</span><br><small>مستوى</small></div>
+            <div class="stat-item"><b>🎁</b> <span id="u-gifts">0</span><br><small>هدايا</small></div>
+        </div>
+
+        <div style="padding: 0 15px;">
+            <button class="btn-main" onclick="nav('p-farm')"><i class="fas fa-leaf"></i> اذهب للمزرعة واكسب ذهب</button>
+            <h4 style="color: #6c5ce7; margin-top: 20px;">🏆 الأغنى حالياً</h4>
+            <div id="top-users"></div>
+        </div>
+    </div>
+
+    <div id="p-chat" class="page">
+        <h3 style="color: #6c5ce7; text-align: center;">💬 محادثة خاصة</h3>
+        <div class="chat-selector">
+            <input type="text" id="target-chat-id" placeholder="أدخل ID الصديق...">
+            <button class="btn-main" style="width: auto; margin: 0; padding: 10px 20px;" onclick="startPrivateChat()">فتح</button>
+        </div>
+        <div class="chat-box" id="p-chat-area" style="display: none;">
+            <div id="private-msgs" style="display: flex; flex-direction: column;"></div>
+            <div style="padding: 10px; display: flex; gap: 5px; border-top: 1px solid #eee;">
+                <input type="text" id="p-input" placeholder="اكتب رسالة..." style="margin: 0;">
+                <button onclick="sendPrivateMsg()" style="background: #6c5ce7; color: white; border: none; padding: 10px 15px; border-radius: 12px;"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <div id="p-shop" class="page">
+        <h3 style="color: #6c5ce7;">💎 متجر الهدايا الفاخرة</h3>
+        <div class="gift-grid">
+            <div class="gift-item" onclick="confirmGift('يخت ملكي', 10000, '🚢')">
+                <i style="color: #00cec9;">🚢</i><b>يخت ملكي</b><br><small>10000 ذهب</small>
+            </div>
+            <div class="gift-item" onclick="confirmGift('طائرة خاصة', 5000, '🛩️')">
+                <i style="color: #6c5ce7;">🛩️</i><b>طائرة خاصة</b><br><small>5000 ذهب</small>
+            </div>
+            <div class="gift-item" onclick="confirmGift('فيلا مودرن', 2000, '🏡')">
+                <i style="color: #fdcb6e;">🏡</i><b>فيلا مودرن</b><br><small>2000 ذهب</small>
+            </div>
+            <div class="gift-item" onclick="confirmGift('سيارة سباق', 1000, '🏎️')">
+                <i style="color: #ff7675;">🏎️</i><b>سيارة سباق</b><br><small>1000 ذهب</small>
+            </div>
+            <div class="gift-item" onclick="confirmGift('قلب ألماس', 500, '💎')">
+                <i style="color: #74b9ff;">💎</i><b>قلب ألماس</b><br><small>500 ذهب</small>
+            </div>
+            <div class="gift-item" onclick="confirmGift('صاروخ حب', 100, '🚀')">
+                <i style="color: #e84393;">🚀</i><b>صاروخ حب</b><br><small>100 ذهب</small>
+            </div>
+        </div>
+    </div>
+
+    <div id="p-farm" class="page">
+        <div style="background: white; padding: 40px; border-radius: 40px; text-align: center; box-shadow: 0 15px 30px rgba(0,0,0,0.05);">
+            <div id="plant" style="font-size: 100px; transition: 0.5s;">🌱</div>
+            <h1 id="f-timer">00:30</h1>
+            <p style="color: #b2bec3;">المحصول يحتاج وقت لينمو...</p>
+            <button id="harvest-btn" class="btn-main" style="display: none; background: #2ecc71;" onclick="harvest()">جمع الذهب 💰</button>
+        </div>
+    </div>
+
+    <nav class="nav-bar">
+        <div class="nav-item active" onclick="nav('p-home', this)"><i class="fas fa-id-card"></i>بروفايلي</div>
+        <div class="nav-item" onclick="nav('p-chat', this)"><i class="fas fa-comment-dots"></i>محادثة</div>
+        <div class="nav-item" onclick="nav('p-shop', this)"><i class="fas fa-shopping-basket"></i>المتجر</div>
+        <div class="nav-item" onclick="alert('تواصل مع الأدمن: 01210931358')"><i class="fas fa-wallet"></i>سحب</div>
+    </nav>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyD3CGRjpDQUH3BCMIkZwl75q8bV8hPTOXY",
+            authDomain: "happyfamily-fb31f.firebaseapp.com",
+            databaseURL: "https://happyfamily-fb31f-default-rtdb.firebaseio.com",
+            projectId: "happyfamily-fb31f",
+            appId: "1:943253473972:web:3d857c8e50be337e5725e1"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let subId = localStorage.getItem("subId") || "HF" + Math.floor(100000 + Math.random()*900000);
+        localStorage.setItem("subId", subId);
+        document.getElementById("my-id").innerText = "ID: " + subId;
+
+        const uRef = db.ref("users/" + subId);
+
+        // تحديث البيانات الشخصية
+        uRef.on("value", snap => {
+            const d = snap.val() || { name: "مستخدم جديد", coins: 0, lvl: 1, gifts: 0 };
+            document.getElementById("my-name").innerText = d.name;
+            document.getElementById("u-coins").innerText = d.coins;
+            document.getElementById("u-lvl").innerText = d.lvl;
+            document.getElementById("u-gifts").innerText = d.gifts || 0;
+            if(d.verified) document.getElementById("v-badge").style.display = "block";
+        });
+
+        // تعديل الاسم
+        function openEditName() {
+            const m = document.getElementById("m-content");
+            m.innerHTML = `<h3>تغيير الاسم</h3><input type="text" id="in-name" placeholder="الاسم الجديد"><button class="btn-main" onclick="saveName()">تأكيد التعديل</button><button onclick="closeM()" style="border:none; background:none; color:gray;">إلغاء</button>`;
+            document.getElementById("modal").style.display = "flex";
+        }
+        function saveName() {
+            const val = document.getElementById("in-name").value;
+            if(val) { uRef.update({name: val}); closeM(); }
+        }
+
+        // المزرعة
+        let sec = 30;
+        setInterval(() => {
+            if(document.getElementById('p-farm').classList.contains('active') && sec > 0) {
+                sec--;
+                document.getElementById("f-timer").innerText = "00:" + (sec < 10 ? "0" : "") + sec;
+                if(sec == 15) document.getElementById("plant").innerText = "🌿";
+                if(sec == 0) {
+                    document.getElementById("plant").innerText = "🌳";
+                    document.getElementById("harvest-btn").style.display = "block";
+                }
+            }
+        }, 1000);
+        function harvest() {
+            uRef.child("coins").transaction(c => (c || 0) + 15);
+            sec = 30;
+            document.getElementById("harvest-btn").style.display = "none";
+            document.getElementById("plant").innerText = "🌱";
+        }
+
+        // نظام المحادثة الخاصة
+        let activeChatId = "";
+        function startPrivateChat() {
+            activeChatId = document.getElementById("target-chat-id").value;
+            if(!activeChatId) return alert("أدخل ID صديقك أولاً");
+            document.getElementById("p-chat-area").style.display = "flex";
+            loadMsgs();
+        }
+        function loadMsgs() {
+            const chatId = [subId, activeChatId].sort().join("_");
+            db.ref("p_chats/" + chatId).limitToLast(10).on("value", snap => {
+                const area = document.getElementById("private-msgs");
+                area.innerHTML = "";
+                snap.forEach(m => {
+                    const data = m.val();
+                    area.innerHTML += `<div class="msg ${data.sender === subId ? 'me' : 'you'}">${data.text}</div>`;
+                });
+                area.scrollTop = area.scrollHeight;
+            });
+        }
+        function sendPrivateMsg() {
+            const txt = document.getElementById("p-input").value;
+            if(!txt) return;
+            const chatId = [subId, activeChatId].sort().join("_");
+            db.ref("p_chats/" + chatId).push({ sender: subId, text: txt, time: Date.now() });
+            document.getElementById("p-input").value = "";
+        }
+
+        // نظام الهدايا
+        function confirmGift(name, price, icon) {
+            const m = document.getElementById("m-content");
+            m.innerHTML = `<h3>إرسال ${icon} ${name}</h3><p>السعر: ${price} ذهب</p><input type="text" id="gift-tid" placeholder="أدخل ID المستلم"><button class="btn-main" onclick="sendGift('${price}')">إرسال الهدية 🎁</button><button onclick="closeM()" style="border:none;background:none;color:gray;">إلغاء</button>`;
+            document.getElementById("modal").style.display = "flex";
+        }
+        function sendGift(price) {
+            const tid = document.getElementById("gift-tid").value;
+            uRef.child("coins").get().then(s => {
+                if((s.val() || 0) < price) return alert("رصيدك لا يكفي!");
+                uRef.child("coins").transaction(c => c - price);
+                db.ref("users/" + tid + "/coins").transaction(c => (c || 0) + parseInt(price));
+                db.ref("users/" + tid + "/gifts").transaction(c => (c || 0) + 1);
+                alert("تم إرسال الهدية بنجاح!"); closeM();
+            });
+        }
+
+        // المتصدرين
+        db.ref("users").orderByChild("coins").limitToLast(5).on("value", snap => {
+            const div = document.getElementById("top-users");
+            div.innerHTML = "";
+            let arr = []; snap.forEach(c => arr.push({id: c.key, ...c.val()}));
+            arr.reverse().forEach((u, i) => {
+                div.innerHTML += `<div style="background:white; padding:15px; border-radius:15px; margin-bottom:10px; display:flex; justify-content:space-between; box-shadow:0 5px 15px rgba(0,0,0,0.02)">
+                    <span>${i+1}. <b>${u.name}</b></span>
+                    <span style="color:#6c5ce7">${u.coins} 💰</span>
+                </div>`;
+            });
+        });
+
+        function nav(id, el) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            if(el) {
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                el.classList.add('active');
+            }
+        }
+        function closeM() { document.getElementById("modal").style.display = "none"; }
+    </script>
+</body>
+</html>
